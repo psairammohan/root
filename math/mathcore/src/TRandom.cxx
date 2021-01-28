@@ -395,11 +395,9 @@ Double_t TRandom::Landau(Double_t mu, Double_t sigma)
 /// the exponential.
 /// For higher values use a rejection method comparing with a Lorentzian
 /// distribution, as suggested by several authors.
-/// This routine since is returning 32 bits integer will not work for values
-/// larger than 2*10**9.
-/// One should then use the Trandom::PoissonD for such large values.
+/// This routine since is returning 64 bits integer.
 
-Int_t TRandom::Poisson(Double_t mean)
+ULong_t TRandom::Poisson(Double_t mean)
 {
    ULong_t n;
    if (mean <= 0) return 0;
@@ -434,13 +432,12 @@ Int_t TRandom::Poisson(Double_t mean)
          t = 0.9*(1.0 + y*y)* TMath::Exp(em*alxm - TMath::LnGamma(em + 1.0) - g);
       } while( Rndm() > t );
 
-      return static_cast<Int_t> (em);
+      return static_cast<ULong_t> (em);
 
    }
    else {
       // use Gaussian approximation vor very large values
-      n = Gaus(0,1)*TMath::Sqrt(mean) + mean +0.5;
-      return n;
+     return Gaus(0,1)*TMath::Sqrt(mean) + mean +0.5; 
    }
 }
 
