@@ -397,7 +397,7 @@ Double_t TRandom::Landau(Double_t mu, Double_t sigma)
 /// distribution, as suggested by several authors.
 /// This routine since is returning 64 bits integer.
 
-ULong_t TRandom::Poisson(Double_t mean)
+UInt_t TRandom::Poisson(Double_t mean)
 {
    ULong_t n;
    if (mean <= 0) return 0;
