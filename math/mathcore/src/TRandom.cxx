@@ -396,7 +396,11 @@ Double_t TRandom::Landau(Double_t mu, Double_t sigma)
 /// For higher values use a rejection method comparing with a Lorentzian
 /// distribution, as suggested by several authors.
 
+<<<<<<< HEAD
 Int_t TRandom::Poisson(Double_t mean)
+=======
+UInt_t TRandom::Poisson(Double_t mean)
+>>>>>>> 636fb89a649a0c9920947d38131ef3192be1f955
 {
    ULong_t n;
    if (mean <= 0) return 0;
