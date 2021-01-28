@@ -401,7 +401,7 @@ Double_t TRandom::Landau(Double_t mu, Double_t sigma)
 
 Int_t TRandom::Poisson(Double_t mean)
 {
-   Int_t n;
+   ULong_t n;
    if (mean <= 0) return 0;
    if (mean < 25) {
       Double_t expmean = TMath::Exp(-mean);
@@ -439,7 +439,7 @@ Int_t TRandom::Poisson(Double_t mean)
    }
    else {
       // use Gaussian approximation vor very large values
-      n = Int_t(Gaus(0,1)*TMath::Sqrt(mean) + mean +0.5);
+      n = Gaus(0,1)*TMath::Sqrt(mean) + mean +0.5;
       return n;
    }
 }
