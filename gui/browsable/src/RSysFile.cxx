@@ -243,21 +243,21 @@ public:
 
    std::string GetItemName() const override { return fItemName; }
 
-   /** Returns -1 if directory or file format supported */
-   int GetNumItemChilds() const override
+   /** Returns true if directory or is file format supported */
+   bool CanItemHaveChilds() const override
    {
       if (R_ISDIR(fCurrentStat.fMode))
-         return -1;
+         return true;
 
       if (RProvider::IsFileFormatSupported(GetFileExtension(fCurrentName)))
-         return -1;
+         return true;
 
-      return 0;
+      return false;
    }
 
    std::unique_ptr<RItem> CreateItem() override
    {
-      auto item = std::make_unique<RSysFileItem>(GetItemName(), GetNumItemChilds());
+      auto item = std::make_unique<RSysFileItem>(GetItemName(), CanItemHaveChilds() ? -1 : 0);
 
       // this is construction of current item
       char tmp[256];
@@ -414,8 +414,6 @@ std::string RSysFile::GetFileIcon(const std::string &fname)
 }
 
 
-
-
 /////////////////////////////////////////////////////////////////////////////////
 /// Create file element
 
@@ -480,6 +478,8 @@ bool RSysFile::MatchName(const std::string &name) const
 
 RElement::EActionKind RSysFile::GetDefaultAction() const
 {
+   if (R_ISDIR(fStat.fMode)) return kActBrowse;
+
    auto icon = GetFileIcon(GetName());
    if (icon == "sap-icon://document-text"s) return kActEdit;
    if (icon == "sap-icon://picture"s) return kActImage;
@@ -539,7 +539,7 @@ std::string RSysFile::GetContent(const std::string &kind)
 /// Provide top entries for file system
 /// On windows it is list of existing drivers, on Linux it is "Files system" and "Home"
 
-std::string RSysFile::ProvideTopEntries(std::shared_ptr<RGroup> &comp, const std::string &workdir)
+RElementPath_t RSysFile::ProvideTopEntries(std::shared_ptr<RGroup> &comp, const std::string &workdir)
 {
    std::string seldir = workdir;
 
@@ -568,8 +568,8 @@ std::string RSysFile::ProvideTopEntries(std::shared_ptr<RGroup> &comp, const std
       std::string homedir = gSystem->UnixPathName(gSystem->HomeDirectory());
 
       if (!homedir.empty())
-         comp->Add(std::make_shared<Browsable::RWrapper>("Home",std::make_unique<RSysFile>(homedir)));
+         comp->Add(std::make_shared<Browsable::RWrapper>("Home", std::make_unique<RSysFile>(homedir)));
    }
 
-   return seldir;
+   return RElement::ParsePath(seldir);
 }

@@ -33,17 +33,7 @@ void RBrowserData::SetTopElement(std::shared_ptr<Browsable::RElement> elem)
 {
    fTopElement = elem;
 
-   SetWorkingDirectory("");
-}
-
-/////////////////////////////////////////////////////////////////////
-/// set working directory relative to top element
-
-void RBrowserData::SetWorkingDirectory(const std::string &strpath)
-{
-   auto path = DecomposePath(strpath, false);
-
-   SetWorkingPath(path);
+   SetWorkingPath({});
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -53,20 +43,22 @@ void RBrowserData::SetWorkingPath(const Browsable::RElementPath_t &path)
 {
    fWorkingPath = path;
 
-   ResetLastRequest();
+   ResetLastRequestData(true);
 }
 
 /////////////////////////////////////////////////////////////////////
 /// Reset all data correspondent to last request
 
-void RBrowserData::ResetLastRequest()
+void RBrowserData::ResetLastRequestData(bool with_element)
 {
    fLastAllChilds = false;
    fLastSortedItems.clear();
    fLastSortMethod.clear();
    fLastItems.clear();
-   fLastPath.clear();
-   fLastElement.reset();
+   if (with_element) {
+      fLastPath.clear();
+      fLastElement.reset();
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -82,22 +74,8 @@ Browsable::RElementPath_t RBrowserData::DecomposePath(const std::string &strpath
    if (strpath.empty())
       return arr;
 
-   std::string slash = "/";
-
-   std::string::size_type previous = 0;
-   if (strpath[0] == slash[0]) previous++;
-
-   auto current = strpath.find(slash, previous);
-   while (current != std::string::npos) {
-      if (current > previous)
-         arr.emplace_back(strpath.substr(previous, current - previous));
-      previous = current + 1;
-      current = strpath.find(slash, previous);
-   }
-
-   if (previous < strpath.length())
-      arr.emplace_back(strpath.substr(previous));
-
+   auto arr2 = Browsable::RElement::ParsePath(strpath);
+   arr.insert(arr.end(), arr2.begin(), arr2.end());
    return arr;
 }
 
@@ -116,11 +94,14 @@ bool RBrowserData::ProcessBrowserRequest(const RBrowserRequest &request, RBrowse
       auto elem = GetSubElement(path);
       if (!elem) return false;
 
-      ResetLastRequest();
+      ResetLastRequestData(true);
 
       fLastPath = path;
       fLastElement = std::move(elem);
-}
+   } else if (request.reload) {
+      // only reload items from element, not need to reset element itself
+      ResetLastRequestData(false);
+   }
 
    // when request childs, always try to make elements
    if (fLastItems.empty()) {
